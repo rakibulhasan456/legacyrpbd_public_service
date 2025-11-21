@@ -1,56 +1,48 @@
-// api/check_license.js
-import fetch from 'node-fetch';
+import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: true, message: 'Method not allowed' });
-    return;
-  }
-
-  const { license_id } = req.body || {};
-  if (!license_id || typeof license_id !== 'string') {
-    res.status(400).json({ error: true, message: 'Missing license_id' });
-    return;
-  }
-
-  // sanitize basic - allow common characters
-  const safeId = license_id.replace(/[^\w\-\s@\.]/g, '').trim();
-
   try {
-    // check submitted first
-    const submittedUrl = `${SUPABASE_URL}/rest/v1/license_submissions?license_id=eq.${encodeURIComponent(safeId)}&select=*`;
-    const allowedUrl = `${SUPABASE_URL}/rest/v1/allowed_licenses?license_id=eq.${encodeURIComponent(safeId)}&select=*`;
-
-    const headers = {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json'
-    };
-
-    const [submittedResp, allowedResp] = await Promise.all([
-      fetch(submittedUrl, { headers }),
-      fetch(allowedUrl, { headers })
-    ]);
-
-    if (!submittedResp.ok || !allowedResp.ok) {
-      res.status(500).json({ error: true, message: 'Supabase request failed' });
-      return;
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const submittedData = await submittedResp.json();
-    const allowedData = await allowedResp.json();
+    const { license_id } = req.body;
 
-    res.json({
-      error: false,
-      allowed: Array.isArray(allowedData) && allowedData.length > 0,
-      submitted: Array.isArray(submittedData) && submittedData.length > 0
-    });
+    if (!license_id) {
+      return res.status(400).json({ error: "Missing license_id" });
+    }
+
+    // Check if license is allowed
+    const { data: allowedData, error: allowedError } = await supabase
+      .from('allowed_licenses')
+      .select('license_id')
+      .eq('license_id', license_id)
+      .single();
+
+    if (allowedError && allowedError.code !== 'PGRST116') throw allowedError;
+
+    const allowed = !!allowedData;
+
+    // Check if already submitted
+    const { data: submittedData, error: submittedError } = await supabase
+      .from('submissions')
+      .select('id')
+      .eq('license_id', license_id)
+      .single();
+
+    if (submittedError && submittedError.code !== 'PGRST116') throw submittedError;
+
+    const submitted = !!submittedData;
+
+    res.status(200).json({ allowed, submitted });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: true, message: 'Server error' });
+    console.error("Check license error:", err);
+    res.status(500).json({ error: true, message: err.message });
   }
 }
