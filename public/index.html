@@ -89,8 +89,14 @@
       const formSection = document.getElementById("formSection");
       const checkBtn = document.getElementById("check-btn");
 
+      // Clear previous messages and hide form
       message.textContent = "";
       formSection.style.display = "none";
+
+      // Clear previous form values
+      document.getElementById("nameInput").value = "";
+      document.getElementById("cidInput").value = "";
+      document.getElementById("selectInput").value = "";
 
       if (!license_id) {
         message.textContent = "Please enter a License ID.";
