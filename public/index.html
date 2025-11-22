@@ -1,31 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-Voting</title>
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body { background-color: #f8f9fa; }
-    .card { margin-top: 50px; }
-    .instruction { margin-top: 20px; font-size: 0.9rem; color: #555; text-align: center; }
-  </style>
+  <link rel="stylesheet" href="assets/css/design.css">
 </head>
 
-<body>
+<body class="bg-light">
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container justify-content-center">
+    <div class="container d-flex justify-content-center">
       <a class="navbar-brand text-center" href="#">E-Voting</a>
     </div>
   </nav>
 
-  <!-- Main Form Card -->
-  <main class="container">
+  <main class="container py-5">
     <div class="row justify-content-center">
       <div class="col-md-7 col-lg-6">
 
@@ -36,25 +31,23 @@
 
             <div id="alert-placeholder"></div>
 
-            <!-- License ID Form -->
-            <form id="license-form" class="mb-3" autocomplete="off">
-              <div class="mb-3">
-                <label for="licenseInput" class="form-label">License ID</label>
-                <input type="text" id="licenseInput" class="form-control" placeholder="Enter license ID" required>
-              </div>
-              <button class="btn btn-primary w-100" type="button" onclick="checkLicense()">Check</button>
-            </form>
+            <!-- License ID input -->
+            <div class="mb-3">
+              <label for="licenseInput" class="form-label">License ID</label>
+              <input type="text" id="licenseInput" class="form-control" placeholder="Enter License ID">
+            </div>
+            <button class="btn btn-primary w-100 mb-3" type="button" onclick="checkLicense()">Check</button>
 
-            <!-- Name, CID, Dropdown Form (hidden initially) -->
+            <!-- Name, CID, Dropdown -->
             <div id="formSection" style="display:none;">
               <div class="mb-3">
                 <label for="nameInput" class="form-label">Full Name</label>
-                <input type="text" id="nameInput" class="form-control" placeholder="Enter Name" required>
+                <input type="text" id="nameInput" class="form-control" placeholder="Enter Name">
               </div>
 
               <div class="mb-3">
                 <label for="cidInput" class="form-label">CID</label>
-                <input type="text" id="cidInput" class="form-control" placeholder="Enter CID" required>
+                <input type="text" id="cidInput" class="form-control" placeholder="Enter CID">
               </div>
 
               <div class="mb-3">
@@ -74,7 +67,7 @@
             <p id="message" class="text-center mt-2"></p>
 
             <!-- Instruction -->
-            <div class="instruction">
+            <div class="text-center mt-4 text-muted" style="font-size: 0.9rem;">
               Instruction: Use <strong>/copy_license</strong> to get your License ID.
             </div>
 
@@ -88,9 +81,9 @@
   <!-- Bootstrap JS bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Your existing JS -->
+  <!-- Existing JS kept as-is -->
   <script>
-  async function checkLicense() {
+    async function checkLicense() {
       const license_id = document.getElementById("licenseInput").value.trim();
       const message = document.getElementById("message");
       const formSection = document.getElementById("formSection");
@@ -99,37 +92,37 @@
       formSection.style.display = "none";
 
       if (!license_id) {
-          message.textContent = "Please enter a License ID.";
-          return;
+        message.textContent = "Please enter a License ID.";
+        return;
       }
 
       try {
-          const response = await fetch("/api/check_license", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ license_id })
-          });
+        const response = await fetch("/api/check_license", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ license_id })
+        });
 
-          const result = await response.json();
+        const result = await response.json();
 
-          if (!result.allowed) {
-              message.textContent = "License ID not allowed.";
-              return;
-          }
+        if (!result.allowed) {
+          message.textContent = "License ID not allowed.";
+          return;
+        }
 
-          if (result.submitted) {
-              message.textContent = "You have already submitted.";
-              return;
-          }
+        if (result.submitted) {
+          message.textContent = "You have already submitted.";
+          return;
+        }
 
-          formSection.style.display = "block";
+        formSection.style.display = "block";
 
       } catch (err) {
-          message.textContent = "Network error.";
+        message.textContent = "Network error.";
       }
-  }
+    }
 
-  async function submitForm() {
+    async function submitForm() {
       const license_id = document.getElementById("licenseInput").value.trim();
       const name = document.getElementById("nameInput").value.trim();
       const cid = document.getElementById("cidInput").value.trim();
@@ -137,35 +130,35 @@
       const message = document.getElementById("message");
 
       if (!name || !cid || !selected_option) {
-          message.textContent = "Please fill in all fields.";
-          return;
+        message.textContent = "Please fill in all fields.";
+        return;
       }
 
       try {
-          const response = await fetch("/api/submit_form", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                  license_id,
-                  name,
-                  cid,
-                  selected_option
-              })
-          });
+        const response = await fetch("/api/submit_form", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            license_id,
+            name,
+            cid,
+            selected_option
+          })
+        });
 
-          const result = await response.json();
+        const result = await response.json();
 
-          if (result.success) {
-              message.textContent = "Submission successful!";
-              document.getElementById("formSection").style.display = "none";
-          } else {
-              message.textContent = "Submission error.";
-          }
+        if (result.success) {
+          message.textContent = "Submission successful!";
+          document.getElementById("formSection").style.display = "none";
+        } else {
+          message.textContent = "Submission error.";
+        }
 
       } catch (err) {
-          message.textContent = "Network error.";
+        message.textContent = "Network error.";
       }
-  }
+    }
   </script>
 
 </body>
