@@ -1,157 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>E-Voting</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Voting</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 30px;
-            text-align: center;
-        }
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        .hidden { display: none; }
-
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        button {
-            background: black;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        .instruction {
-            margin-top: 25px;
-            font-size: 14px;
-            color: #555;
-        }
-    </style>
+  <style>
+    body { background-color: #f8f9fa; }
+    .card { margin-top: 50px; }
+    .instruction { margin-top: 20px; font-size: 0.9rem; color: #555; text-align: center; }
+  </style>
 </head>
 
 <body>
 
-    <h1>E-Voting</h1>
-
-    <input type="text" id="licenseInput" placeholder="Enter License ID" />
-
-    <button onclick="checkLicense()">Check License</button>
-
-    <!-- Name, CID, Dropdown -->
-    <div id="formSection" class="hidden">
-
-        <input type="text" id="nameInput" placeholder="Enter Name">
-
-        <input type="text" id="cidInput" placeholder="Enter CID">
-
-        <select id="selectInput">
-            <option value="">Select Your Option</option>
-            <option value="Option A">Option A</option>
-            <option value="Option B">Option B</option>
-            <option value="Option C">Option C</option>
-        </select>
-
-        <button onclick="submitForm()">Submit</button>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container justify-content-center">
+      <a class="navbar-brand text-center" href="#">E-Voting</a>
     </div>
+  </nav>
 
-    <p id="message"></p>
+  <!-- Main Form Card -->
+  <main class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-6">
 
-    <!-- Instruction -->
-    <div class="instruction">
-        Instruction: Use /copy_license to get your License ID.
+        <div class="card shadow-sm">
+          <div class="card-body">
+
+            <h5 class="card-title mb-3 text-center">Enter License ID</h5>
+
+            <div id="alert-placeholder"></div>
+
+            <!-- License ID Form -->
+            <form id="license-form" class="mb-3" autocomplete="off">
+              <div class="mb-3">
+                <label for="licenseInput" class="form-label">License ID</label>
+                <input type="text" id="licenseInput" class="form-control" placeholder="Enter license ID" required>
+              </div>
+              <button class="btn btn-primary w-100" type="button" onclick="checkLicense()">Check</button>
+            </form>
+
+            <!-- Name, CID, Dropdown Form (hidden initially) -->
+            <div id="formSection" style="display:none;">
+              <div class="mb-3">
+                <label for="nameInput" class="form-label">Full Name</label>
+                <input type="text" id="nameInput" class="form-control" placeholder="Enter Name" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="cidInput" class="form-label">CID</label>
+                <input type="text" id="cidInput" class="form-control" placeholder="Enter CID" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="selectInput" class="form-label">Select</label>
+                <select id="selectInput" class="form-control">
+                  <option value="">Select Your Option</option>
+                  <option value="Option A">Option A</option>
+                  <option value="Option B">Option B</option>
+                  <option value="Option C">Option C</option>
+                </select>
+              </div>
+
+              <button class="btn btn-success w-100 mb-2" type="button" onclick="submitForm()">Submit</button>
+            </div>
+
+            <!-- Message -->
+            <p id="message" class="text-center mt-2"></p>
+
+            <!-- Instruction -->
+            <div class="instruction">
+              Instruction: Use <strong>/copy_license</strong> to get your License ID.
+            </div>
+
+          </div>
+        </div>
+
+      </div>
     </div>
+  </main>
 
-<script>
-async function checkLicense() {
-    const license_id = document.getElementById("licenseInput").value.trim();
-    const message = document.getElementById("message");
-    const formSection = document.getElementById("formSection");
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    message.textContent = "";
-    formSection.classList.add("hidden");
+  <!-- Your existing JS -->
+  <script>
+  async function checkLicense() {
+      const license_id = document.getElementById("licenseInput").value.trim();
+      const message = document.getElementById("message");
+      const formSection = document.getElementById("formSection");
 
-    if (!license_id) {
-        message.textContent = "Please enter a License ID.";
-        return;
-    }
+      message.textContent = "";
+      formSection.style.display = "none";
 
-    try {
-        const response = await fetch("/api/check_license", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ license_id })
-        });
+      if (!license_id) {
+          message.textContent = "Please enter a License ID.";
+          return;
+      }
 
-        const result = await response.json();
+      try {
+          const response = await fetch("/api/check_license", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ license_id })
+          });
 
-        if (!result.allowed) {
-            message.textContent = "License ID not allowed.";
-            return;
-        }
+          const result = await response.json();
 
-        if (result.submitted) {
-            message.textContent = "You have already submitted.";
-            return;
-        }
+          if (!result.allowed) {
+              message.textContent = "License ID not allowed.";
+              return;
+          }
 
-        formSection.classList.remove("hidden");
+          if (result.submitted) {
+              message.textContent = "You have already submitted.";
+              return;
+          }
 
-    } catch (err) {
-        message.textContent = "Network error.";
-    }
-}
+          formSection.style.display = "block";
 
-async function submitForm() {
-    const license_id = document.getElementById("licenseInput").value.trim();
-    const name = document.getElementById("nameInput").value.trim();
-    const cid = document.getElementById("cidInput").value.trim();
-    const selected_option = document.getElementById("selectInput").value;
-    const message = document.getElementById("message");
+      } catch (err) {
+          message.textContent = "Network error.";
+      }
+  }
 
-    if (!name || !cid || !selected_option) {
-        message.textContent = "Please fill in all fields.";
-        return;
-    }
+  async function submitForm() {
+      const license_id = document.getElementById("licenseInput").value.trim();
+      const name = document.getElementById("nameInput").value.trim();
+      const cid = document.getElementById("cidInput").value.trim();
+      const selected_option = document.getElementById("selectInput").value;
+      const message = document.getElementById("message");
 
-    try {
-        const response = await fetch("/api/submit_form", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                license_id,
-                name,
-                cid,
-                selected_option
-            })
-        });
+      if (!name || !cid || !selected_option) {
+          message.textContent = "Please fill in all fields.";
+          return;
+      }
 
-        const result = await response.json();
+      try {
+          const response = await fetch("/api/submit_form", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  license_id,
+                  name,
+                  cid,
+                  selected_option
+              })
+          });
 
-        if (result.success) {
-            message.textContent = "Submission successful!";
-            document.getElementById("formSection").classList.add("hidden");
-        } else {
-            message.textContent = "Submission error.";
-        }
+          const result = await response.json();
 
-    } catch (err) {
-        message.textContent = "Network error.";
-    }
-}
-</script>
+          if (result.success) {
+              message.textContent = "Submission successful!";
+              document.getElementById("formSection").style.display = "none";
+          } else {
+              message.textContent = "Submission error.";
+          }
+
+      } catch (err) {
+          message.textContent = "Network error.";
+      }
+  }
+  </script>
 
 </body>
 </html>
