@@ -64,7 +64,7 @@
             </div>
 
             <!-- Message -->
-            <div id="message" class="mt-2"></div>
+            <p id="message" class="text-center mt-2"></p>
 
             <!-- Instruction -->
             <div class="text-center mt-4 text-muted" style="font-size: 0.9rem;">
@@ -83,25 +83,17 @@
 
   <!-- JS logic -->
   <script>
-    // Function to show message as Bootstrap alert
-    function showMessage(text, type = "info") {
-      const messageDiv = document.getElementById("message");
-      messageDiv.innerHTML = `
-        <div class="alert alert-${type} text-center mb-0" role="alert">
-          ${text}
-        </div>
-      `;
-    }
-
     async function checkLicense() {
       const license_id = document.getElementById("licenseInput").value.trim();
+      const message = document.getElementById("message");
       const formSection = document.getElementById("formSection");
       const checkBtn = document.getElementById("check-btn");
 
+      message.textContent = "";
       formSection.style.display = "none";
 
       if (!license_id) {
-        showMessage("Please enter a License ID.", "warning");
+        message.textContent = "Please enter a License ID.";
         return;
       }
 
@@ -119,19 +111,19 @@
         const result = await response.json();
 
         if (!result.allowed) {
-          showMessage("License ID not allowed.", "danger");
+          message.textContent = "License ID not allowed.";
           return;
         }
 
         if (result.submitted) {
-          showMessage("You have already submitted.", "warning");
+          message.textContent = "You have already submitted.";
           return;
         }
 
         formSection.style.display = "block";
 
       } catch (err) {
-        showMessage("Network error.", "danger");
+        message.textContent = "Network error.";
       } finally {
         checkBtn.textContent = "Check";
         checkBtn.disabled = false;
@@ -143,10 +135,11 @@
       const name = document.getElementById("nameInput").value.trim();
       const cid = document.getElementById("cidInput").value.trim();
       const selected_option = document.getElementById("selectInput").value;
+      const message = document.getElementById("message");
       const submitBtn = document.getElementById("submit-btn");
 
       if (!name || !cid || !selected_option) {
-        showMessage("Please fill in all fields.", "warning");
+        message.textContent = "Please fill in all fields.";
         return;
       }
 
@@ -169,14 +162,14 @@
         const result = await response.json();
 
         if (result.success) {
-          showMessage("Submission successful!", "success");
-          document.getElementById("formSection").style.display = "none";
+          message.textContent = "Submission successful!";
+          formSection.style.display = "none";
         } else {
-          showMessage("Submission error.", "danger");
+          message.textContent = "Submission error.";
         }
 
       } catch (err) {
-        showMessage("Network error.", "danger");
+        message.textContent = "Network error.";
       } finally {
         submitBtn.textContent = "Submit";
         submitBtn.disabled = false;
