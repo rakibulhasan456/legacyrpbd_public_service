@@ -39,33 +39,34 @@
               <button class="btn btn-primary" id="check-btn" type="submit">Check</button>
             </form>
 
-            <!-- Name, CID & Select dropdown -->
-            <form id="info-form" style="display:none;" autocomplete="off">
-              
-              <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" id="name" name="name" class="form-control" placeholder="Full name" required>
-              </div>
+            <!-- Name, CID & Dropdown -->
+<form id="info-form" style="display:none;" autocomplete="off">
 
-              <div class="mb-3">
-                <label for="cid" class="form-label">CID</label>
-                <input type="text" id="cid" name="cid" class="form-control" placeholder="CID" required>
-              </div>
+  <div class="mb-3">
+    <label for="name" class="form-label">Full Name</label>
+    <input type="text" id="name" name="name" class="form-control" placeholder="Full name" required>
+  </div>
 
-              <div class="mb-3">
-                <label for="selection" class="form-label">Select</label>
-                <select id="selection" name="selection" class="form-control" required>
-                  <option value="" disabled selected>Select an option</option>
-                  <option value="Option A">Option A</option>
-                  <option value="Option B">Option B</option>
-                  <option value="Option C">Option C</option>
-                </select>
-              </div>
+  <div class="mb-3">
+    <label for="cid" class="form-label">CID</label>
+    <input type="text" id="cid" name="cid" class="form-control" placeholder="CID" required>
+  </div>
 
-              <button class="btn btn-success" id="submit-btn" type="submit">Submit</button>
-              <button class="btn btn-secondary ms-2" id="cancel-btn" type="button">Cancel</button>
+  <!-- Dropdown (visual only, no backend change) -->
+  <div class="mb-3">
+    <label for="selection" class="form-label">Select</label>
+    <select id="selection" name="selection" class="form-control">
+      <option value="" disabled selected>Select an option</option>
+      <option value="Option A">Option A</option>
+      <option value="Option B">Option B</option>
+      <option value="Option C">Option C</option>
+    </select>
+  </div>
 
-            </form>
+  <button class="btn btn-success" id="submit-btn" type="submit">Submit</button>
+  <button class="btn btn-secondary ms-2" id="cancel-btn" type="button">Cancel</button>
+
+</form>
 
             <!-- Already submitted -->
             <div id="already-submitted" class="alert alert-warning mt-3" style="display:none;">
