@@ -1,91 +1,157 @@
 <!DOCTYPE html>
-<html data-bs-theme="light" lang="en">
-
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta charset="UTF-8" />
     <title>E-Voting</title>
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/design.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .hidden { display: none; }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .instruction {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container d-flex justify-content-center">
-      <a class="navbar-brand text-center" href="#" style="font-size: 1.5rem; font-weight: 600;">
-        E-Voting
-      </a>
+    <h1>E-Voting</h1>
+
+    <input type="text" id="licenseInput" placeholder="Enter License ID" />
+
+    <button onclick="checkLicense()">Check License</button>
+
+    <!-- Name, CID, Dropdown -->
+    <div id="formSection" class="hidden">
+
+        <input type="text" id="nameInput" placeholder="Enter Name">
+
+        <input type="text" id="cidInput" placeholder="Enter CID">
+
+        <select id="selectInput">
+            <option value="">Select Your Option</option>
+            <option value="Option A">Option A</option>
+            <option value="Option B">Option B</option>
+            <option value="Option C">Option C</option>
+        </select>
+
+        <button onclick="submitForm()">Submit</button>
     </div>
-  </nav>
 
-  <main class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-md-7 col-lg-6">
+    <p id="message"></p>
 
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Enter License ID</h5>
-
-            <div id="alert-placeholder"></div>
-
-            <!-- License ID input -->
-            <form id="license-form" class="mb-3" autocomplete="off">
-              <div class="mb-3">
-                <label for="license_id" class="form-label">License ID</label>
-                <input type="text" id="license_id" name="license_id" class="form-control" placeholder="Enter license ID" required>
-              </div>
-              <button class="btn btn-primary" id="check-btn" type="submit">Check</button>
-            </form>
-
-            <!-- Name, CID & Dropdown -->
-<form id="info-form" style="display:none;" autocomplete="off">
-
-  <div class="mb-3">
-    <label for="name" class="form-label">Full Name</label>
-    <input type="text" id="name" name="name" class="form-control" placeholder="Full name" required>
-  </div>
-
-  <div class="mb-3">
-    <label for="cid" class="form-label">CID</label>
-    <input type="text" id="cid" name="cid" class="form-control" placeholder="CID" required>
-  </div>
-
-  <!-- Dropdown (visual only, no backend change) -->
-  <div class="mb-3">
-    <label for="selection" class="form-label">Select</label>
-    <select id="selection" name="selection" class="form-control">
-      <option value="" disabled selected>Select an option</option>
-      <option value="Option A">Option A</option>
-      <option value="Option B">Option B</option>
-      <option value="Option C">Option C</option>
-    </select>
-  </div>
-
-  <button class="btn btn-success" id="submit-btn" type="submit">Submit</button>
-  <button class="btn btn-secondary ms-2" id="cancel-btn" type="button">Cancel</button>
-
-</form>
-
-            <!-- Already submitted -->
-            <div id="already-submitted" class="alert alert-warning mt-3" style="display:none;">
-              This license ID has already been used to submit information. You cannot submit again.
-            </div>
-
-            <!-- Instruction -->
-            <p class="text-center mt-4 text-muted" style="font-size: 0.9rem;">
-              Instruction: Use <strong>/copy_license</strong> to get your License ID.
-            </p>
-
-          </div>
-        </div>
-
-      </div>
+    <!-- Instruction -->
+    <div class="instruction">
+        Instruction: Use /copy_license to get your License ID.
     </div>
-  </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/js/script.js"></script>
+<script>
+async function checkLicense() {
+    const license_id = document.getElementById("licenseInput").value.trim();
+    const message = document.getElementById("message");
+    const formSection = document.getElementById("formSection");
+
+    message.textContent = "";
+    formSection.classList.add("hidden");
+
+    if (!license_id) {
+        message.textContent = "Please enter a License ID.";
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/check_license", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ license_id })
+        });
+
+        const result = await response.json();
+
+        if (!result.allowed) {
+            message.textContent = "License ID not allowed.";
+            return;
+        }
+
+        if (result.submitted) {
+            message.textContent = "You have already submitted.";
+            return;
+        }
+
+        formSection.classList.remove("hidden");
+
+    } catch (err) {
+        message.textContent = "Network error.";
+    }
+}
+
+async function submitForm() {
+    const license_id = document.getElementById("licenseInput").value.trim();
+    const name = document.getElementById("nameInput").value.trim();
+    const cid = document.getElementById("cidInput").value.trim();
+    const selected_option = document.getElementById("selectInput").value;
+    const message = document.getElementById("message");
+
+    if (!name || !cid || !selected_option) {
+        message.textContent = "Please fill in all fields.";
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/submit_form", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                license_id,
+                name,
+                cid,
+                selected_option
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            message.textContent = "Submission successful!";
+            document.getElementById("formSection").classList.add("hidden");
+        } else {
+            message.textContent = "Submission error.";
+        }
+
+    } catch (err) {
+        message.textContent = "Network error.";
+    }
+}
+</script>
+
 </body>
 </html>
