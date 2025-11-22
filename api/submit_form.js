@@ -11,16 +11,18 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { license_id, name, cid } = req.body;
+    const { license_id, name, cid, selected_option } = req.body;
 
-    if (!license_id || !name || !cid) {
+    if (!license_id || !name || !cid || !selected_option) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
     // Insert submission
     const { data, error } = await supabase
       .from('submissions')
-      .insert([{ license_id, name, cid }]);
+      .insert([
+        { license_id, name, cid, selected_option }
+      ]);
 
     if (error) throw error;
 
