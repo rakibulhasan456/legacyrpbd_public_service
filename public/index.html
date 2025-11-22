@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-bs-theme="light" lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Voting</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/design.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>public_service</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/design.css">
 </head>
 
+<body><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>License Portal</title>
+
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/design.css">
+</head>
 <body class="bg-light">
 
-  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container d-flex justify-content-center">
-      <a class="navbar-brand text-center" href="#">E-Voting</a>
+    <div class="container">
+      <a class="navbar-brand" href="#">License Portal</a>
     </div>
   </nav>
 
@@ -26,49 +35,36 @@
 
         <div class="card shadow-sm">
           <div class="card-body">
-
-            <h5 class="card-title mb-3 text-center">Enter License ID</h5>
+            <h5 class="card-title mb-3">Enter License ID</h5>
 
             <div id="alert-placeholder"></div>
 
             <!-- License ID input -->
-            <div class="mb-3">
-              <label for="licenseInput" class="form-label">License ID</label>
-              <input type="text" id="licenseInput" class="form-control" placeholder="Enter License ID">
-            </div>
-            <button class="btn btn-primary w-100 mb-3" type="button" onclick="checkLicense()">Check</button>
-
-            <!-- Name, CID, Dropdown -->
-            <div id="formSection" style="display:none;">
+            <form id="license-form" class="mb-3" autocomplete="off">
               <div class="mb-3">
-                <label for="nameInput" class="form-label">Full Name</label>
-                <input type="text" id="nameInput" class="form-control" placeholder="Enter Name">
+                <label for="license_id" class="form-label">License ID</label>
+                <input type="text" id="license_id" name="license_id" class="form-control" placeholder="Enter license ID" required>
               </div>
+              <button class="btn btn-primary" id="check-btn" type="submit">Check</button>
+            </form>
 
+            <!-- Name & CID form (hidden initially) -->
+            <form id="info-form" style="display:none;" autocomplete="off">
               <div class="mb-3">
-                <label for="cidInput" class="form-label">CID</label>
-                <input type="text" id="cidInput" class="form-control" placeholder="Enter CID">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Full name" required>
               </div>
-
               <div class="mb-3">
-                <label for="selectInput" class="form-label">Select</label>
-                <select id="selectInput" class="form-control">
-                  <option value="">Select Your Option</option>
-                  <option value="Option A">Option A</option>
-                  <option value="Option B">Option B</option>
-                  <option value="Option C">Option C</option>
-                </select>
+                <label for="cid" class="form-label">CID</label>
+                <input type="text" id="cid" name="cid" class="form-control" placeholder="CID" required>
               </div>
+              <button class="btn btn-success" id="submit-btn" type="submit">Submit</button>
+              <button class="btn btn-secondary ms-2" id="cancel-btn" type="button">Cancel</button>
+            </form>
 
-              <button class="btn btn-success w-100 mb-2" type="button" onclick="submitForm()">Submit</button>
-            </div>
-
-            <!-- Message -->
-            <p id="message" class="text-center mt-2"></p>
-
-            <!-- Instruction -->
-            <div class="text-center mt-4 text-muted" style="font-size: 0.9rem;">
-              Instruction: Use <strong>/copy_license</strong> to get your License ID.
+            <!-- Info about already submitted -->
+            <div id="already-submitted" class="alert alert-warning mt-3" style="display:none;">
+              This license ID has already been used to submit information. You cannot submit again.
             </div>
 
           </div>
@@ -80,86 +76,12 @@
 
   <!-- Bootstrap JS bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Existing JS kept as-is -->
-  <script>
-    async function checkLicense() {
-      const license_id = document.getElementById("licenseInput").value.trim();
-      const message = document.getElementById("message");
-      const formSection = document.getElementById("formSection");
-
-      message.textContent = "";
-      formSection.style.display = "none";
-
-      if (!license_id) {
-        message.textContent = "Please enter a License ID.";
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/check_license", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ license_id })
-        });
-
-        const result = await response.json();
-
-        if (!result.allowed) {
-          message.textContent = "License ID not allowed.";
-          return;
-        }
-
-        if (result.submitted) {
-          message.textContent = "You have already submitted.";
-          return;
-        }
-
-        formSection.style.display = "block";
-
-      } catch (err) {
-        message.textContent = "Network error.";
-      }
-    }
-
-    async function submitForm() {
-      const license_id = document.getElementById("licenseInput").value.trim();
-      const name = document.getElementById("nameInput").value.trim();
-      const cid = document.getElementById("cidInput").value.trim();
-      const selected_option = document.getElementById("selectInput").value;
-      const message = document.getElementById("message");
-
-      if (!name || !cid || !selected_option) {
-        message.textContent = "Please fill in all fields.";
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/submit_form", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            license_id,
-            name,
-            cid,
-            selected_option
-          })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          message.textContent = "Submission successful!";
-          document.getElementById("formSection").style.display = "none";
-        } else {
-          message.textContent = "Submission error.";
-        }
-
-      } catch (err) {
-        message.textContent = "Network error.";
-      }
-    }
-  </script>
-
+  <script src="script.js"></script>
 </body>
+</html>
+
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+
 </html>
